@@ -137,7 +137,7 @@ class Game:
         pygame.display.set_caption("Gotta Ketchum All")
 
         self.background_items = create_random_background_items(10)
-        self.trainer = Trainer('./sprites/ashe.png')
+        self.trainer = Trainer('./sprites/ash.png')
         self.pokeball_sprite = pygame.image.load('./sprites/pokeball.png')
         self.pokeball_rect = self.pokeball_sprite.get_rect()
         self.discovered_pokeballs = []
@@ -175,9 +175,26 @@ class Game:
             sub_label = sub_font.render(sub_message, True, (0, 0, 0))
             sub_label_rect = sub_label.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 20))
 
-            # Draw to screen
+            # Draw captured sprites
+            captured_pokemon = next((pokemon for pokemon in self.trainer.captured_pokemon if pokemon.name.lower() == pokemon_name.lower()), None)
+            if captured_pokemon:
+                sprite = captured_pokemon.sprite
+                increased_size = (120, 120)
+                resized_sprite = pygame.transform.scale(sprite, increased_size)
+                sprite_x = (WIDTH - resized_sprite.get_width()) // 2
+                sprite_y = (HEIGHT - 300 - resized_sprite.get_height()) // 2
+                self.screen.blit(resized_sprite, (sprite_x, sprite_y))
+
+            # Draw main and sub labels
             self.screen.blit(main_label, main_label_rect.topleft)
             self.screen.blit(sub_label, sub_label_rect.topleft)
+
+            # Display Pokemon details
+            details_font = pygame.font.Font(None, 30)
+            details_text = f"| HP: {captured_pokemon.hit_points} | Attack: {captured_pokemon.attack_points} | Defense: {captured_pokemon.defense_points} |"
+            details_label = details_font.render(details_text, True, (0, 0, 0))
+            details_label_rect = details_label.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 100))
+            self.screen.blit(details_label, details_label_rect.topleft)
 
             pygame.display.update()
 
