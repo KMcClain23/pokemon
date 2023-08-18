@@ -145,6 +145,11 @@ class Game:
         self.font = pygame.font.SysFont('Roboto', 36)
         # self.message = None
 
+        self.grass_texture = pygame.image.load('./sprites/grass_texture.png')
+        self.grass_texture = pygame.transform.scale(self.grass_texture, (32, 32))
+
+
+        
     def draw_bottom_bar(self):
         bar_height = 100  # height of the bar at the bottom
         border_height = 5
@@ -248,18 +253,24 @@ class Game:
                 self.show_captured_message(item.pokemon.name)
 
 
+        # Draw other elements on top of the grass texture
     def draw(self):
-        # Draw/redraw all the elements on the screen after updating thier information
-        self.screen.fill(GREEN)
-        self.draw_bottom_bar()
+        # Tile grass texture across the screen
+        for x in range(0, WIDTH, self.grass_texture.get_width()):
+            for y in range(0, HEIGHT, self.grass_texture.get_height()):
+                self.screen.blit(self.grass_texture, (x, y))
 
+
+        # Draw other elements on top of the grass texture
         for item in self.background_items:
             item.draw(self.screen)
         self.trainer.draw(self.screen)
-
         for item, position in self.discovered_pokeballs:
             if item.is_pokeball:
                 self.screen.blit(self.pokeball_sprite, position)
+
+        # Draw the bottom bar last to ensure it's on top of other elements
+        self.draw_bottom_bar()
 
 
 def main():
