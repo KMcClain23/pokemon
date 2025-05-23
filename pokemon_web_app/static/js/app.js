@@ -24,9 +24,9 @@ const CapturedPokemonList = (props) => {
 const PokemonCaughtScreen = (props) => {
     const { pokemonData, onClose } = props;
     if (!pokemonData) return null;
-    const hp = pokemonData.stats?.hp || 'N/A';
-    const attack = pokemonData.stats?.attack || 'N/A';
-    const defense = pokemonData.stats?.defense || 'N/A';
+    const hp = (pokemonData.stats && pokemonData.stats.hp) || 'N/A';
+    const attack = (pokemonData.stats && pokemonData.stats.attack) || 'N/A';
+    const defense = (pokemonData.stats && pokemonData.stats.defense) || 'N/A';
     return (
         <div className="modal-overlay">
             <div className="modal-content">
