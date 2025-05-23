@@ -1,0 +1,209 @@
+/* Styles for Pokemon Web Game */
+body {
+    font-family: 'Arial', sans-serif; /* Clear, common sans-serif font */
+    margin: 0;
+    padding: 20px;
+    background-color: #f0f0f0; /* Light tan/grey background */
+    color: #333;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Center main content blocks */
+}
+
+h1, h2, h3 {
+    color: #c7a008; /* Dark Yellow for headings - Pokemon Gold/Yellow */
+    text-align: center;
+}
+
+h1 {
+    font-size: 2.5em;
+    margin-bottom: 20px;
+}
+
+h2 {
+    font-size: 1.8em;
+}
+
+h3 {
+    font-size: 1.4em;
+}
+
+/* Game Area styling */
+.game-area-container { /* Wrapper for the game area itself */
+    margin-bottom: 20px;
+    padding: 10px; /* Padding around the game area */
+    background-color: #ffffff; /* White frame for the game area */
+    border: 3px solid #78c850; /* Green border - grass color */
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+}
+
+.game-area-main { /* The actual game area div where trainer and items are */
+    /* width and height are set by inline styles in Game.js */
+    /* border: 1px solid #333; /* Optional: if a border inside the padding is desired */
+    position: relative; /* Crucial for positioning elements within */
+    background-color: #90ee90; /* Light green "grass" background */
+    overflow: hidden; /* Ensure items don't visually escape if logic allows */
+}
+
+
+/* Initial PokemonDisplay styling (currently a bit redundant) */
+.pokemon-display {
+    border: 1px solid #dedede;
+    border-radius: 8px;
+    background-color: #fff;
+    padding: 15px;
+    margin-top: 20px;
+    text-align: center;
+    box-shadow: 0 0 8px rgba(0,0,0,0.08);
+}
+.pokemon-display img {
+    border: 1px solid #eee;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    padding: 5px;
+}
+
+/* Pokemon Caught Screen Modal */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.75); /* Darker overlay for better focus */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 15px; /* Ensure modal isn't flush with screen edges */
+}
+
+.modal-content {
+    background-color: white;
+    padding: 25px;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.25);
+    width: auto;
+    max-width: 350px; /* Max width for the modal */
+    border: 3px solid #78c850; /* Green border, matching game area */
+}
+
+.modal-content h2 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: #c7a008; /* Dark Yellow */
+}
+
+.pokemon-sprite-caught {
+    width: 140px; 
+    height: 140px; 
+    margin: 15px auto;
+    display: block;
+    animation: fadeInScaleUp 0.5s cubic-bezier(0.390, 0.575, 0.565, 1.000) forwards; /* Smoother easing */
+}
+
+@keyframes fadeInScaleUp {
+    0% {
+        opacity: 0;
+        transform: scale(0.5);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.modal-content button {
+    background-color: #e63946; /* Dark Red for button */
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1em;
+    font-weight: bold;
+    margin-top: 20px;
+    transition: background-color 0.2s ease-in-out, transform 0.1s ease;
+}
+
+.modal-content button:hover {
+    background-color: #d62828; /* Slightly darker red on hover */
+    transform: translateY(-1px);
+}
+.modal-content button:active {
+    transform: translateY(0px);
+}
+
+
+.modal-content p {
+    margin: 10px 0;
+    font-size: 1.1em; /* Slightly larger font for stats */
+    color: #444; /* Darker text for stats */
+}
+
+.modal-content p strong {
+    color: #333; /* Even darker for stat names */
+}
+
+/* Captured Pokemon List Bar */
+.captured-pokemon-bar {
+    background-color: #e8e8e8; /* Lighter tan/grey */
+    padding: 15px;
+    margin-top: 25px;
+    border-radius: 10px;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+    width: 100%;
+    max-width: 800px; /* Match game area width for alignment */
+    text-align: center; 
+    border: 2px solid #b08d57; /* Tan border */
+}
+
+.captured-pokemon-bar h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: #c7a008; /* Dark Yellow */
+}
+
+.pokemon-list-items {
+    display: flex;
+    flex-wrap: wrap; 
+    justify-content: center; 
+    gap: 12px; 
+}
+
+.captured-pokemon-item {
+    background-color: #fff;
+    border: 2px solid #b08d57; /* Tan border for items */
+    border-radius: 8px;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    width: 70px; /* Slightly larger items */
+}
+
+.captured-pokemon-item:hover {
+    transform: scale(1.08); 
+    box-shadow: 0 0 10px rgba(176, 141, 87, 0.5); /* Tan shadow on hover */
+}
+
+.captured-pokemon-item img {
+    width: 60px;  
+    height: 60px; 
+    object-fit: contain; 
+}
+
+.captured-pokemon-item p { 
+    margin-top: 5px;
+    font-size: 0.75em;
+    color: #555;
+    font-weight: bold;
+}
+
+/* Utility class if needed for some specific text elements */
+.text-muted {
+    color: #6c757d;
+}
