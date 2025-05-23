@@ -14,9 +14,6 @@ const CapturedPokemonList = (props) => {
                 {capturedPokemon.map((pokemon, index) => (
                     <div key={index} className="captured-pokemon-item" title={pokemon.name}>
                         <img src={pokemon.sprite_url} alt={pokemon.name} />
-                        {/* Optional: Display name below sprite
-                        <p>{pokemon.name}</p> 
-                        */}
                     </div>
                 ))}
             </div>
@@ -26,15 +23,10 @@ const CapturedPokemonList = (props) => {
 
 const PokemonCaughtScreen = (props) => {
     const { pokemonData, onClose } = props;
-
-    if (!pokemonData) {
-        return null; 
-    }
-
+    if (!pokemonData) return null;
     const hp = pokemonData.stats?.hp || 'N/A';
     const attack = pokemonData.stats?.attack || 'N/A';
     const defense = pokemonData.stats?.defense || 'N/A';
-
     return (
         <div className="modal-overlay">
             <div className="modal-content">
@@ -55,110 +47,119 @@ const PokemonCaughtScreen = (props) => {
     );
 };
 
-
 const BackgroundItem = (props) => {
-    const { item, onRevealPokeball, onCollectPokeball } = props;
+    const { item, onRevealPokeball, onCollectPokeball, gameDimensions } = props;
+    const itemX = gameDimensions ? item.xPercent * gameDimensions.width : item.x;
+    const itemY = gameDimensions ? item.yPercent * gameDimensions.height : item.y;
+    
+    const itemSize = gameDimensions ? gameDimensions.width * 0.0625 : 50; 
+    const pokeballVisualSize = itemSize / 2; // Visual size of the Pokeball sprite
+
+    // Make tappable area larger than visual sprite, e.g., 1.5x the visual size, minimum 20px
+    const pokeballTappableSize = Math.max(pokeballVisualSize * 1.5, 20); 
+    // Calculate padding needed to achieve tappable size around visual sprite
+    const pokeballPadding = (pokeballTappableSize - pokeballVisualSize) / 2;
+
+
     const itemStyle = {
         position: 'absolute',
-        left: item.x + 'px',
-        top: item.y + 'px',
-        width: '50px', 
-        height: '50px', 
+        left: itemX + 'px',
+        top: itemY + 'px',
+        width: itemSize + 'px', 
+        height: itemSize + 'px', 
     };
 
-    const pokeballStyle = {
+    // Wrapper for the Pokeball to increase tappable area
+    const pokeballWrapperStyle = {
         position: 'absolute',
-        left: (item.x + 25) + 'px', 
-        top: (item.y + 25) + 'px',  
-        width: '25px', 
-        height: '25px',
+        left: (itemX + itemSize / 2 - pokeballPadding) + 'px', // Adjust left for padding
+        top: (itemY + itemSize / 2 - pokeballPadding) + 'px',   // Adjust top for padding
+        width: pokeballTappableSize + 'px', 
+        height: pokeballTappableSize + 'px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
         cursor: 'pointer',
         zIndex: 10 
+        // For debugging tappable area:
+        // backgroundColor: 'rgba(255, 0, 0, 0.3)', 
     };
+    
+    const pokeballImageStyle = {
+        width: pokeballVisualSize + 'px', 
+        height: pokeballVisualSize + 'px',
+    };
+
 
     return (
         <div>
             <img src={item.spriteUrl} alt="Background item" style={itemStyle} />
             {item.hasPokeball && item.pokeballRevealed && (
-                <img 
-                    src="/static/sprites/pokeball.png" 
-                    alt="Pokeball" 
-                    style={pokeballStyle} 
-                    onClick={() => onCollectPokeball(item.id)}
-                />
+                <div style={pokeballWrapperStyle} onClick={() => onCollectPokeball(item.id)}>
+                    <img 
+                        src="/static/sprites/pokeball.png" 
+                        alt="Pokeball" 
+                        style={pokeballImageStyle} 
+                    />
+                </div>
             )}
         </div>
     );
 };
 
-
-const PokemonDisplay = () => {
-    const [pokemon, setPokemon] = React.useState(null);
-    const [loading, setLoading] = React.useState(true);
-
-    // This component is currently a bit redundant as the main Pokemon display
-    // is now the "Pokemon Caught Screen". It could be repurposed or removed.
-    // For now, it just shows one random Pokemon at the start.
-    React.useEffect(() => {
-        fetch('/api/random_pokemon')
-            .then(response => response.json())
-            .then(data => {
-                setPokemon(data);
-                setLoading(false);
-            })
-            .catch(error => {
-                console.error("Error fetching initial Pokemon:", error);
-                setLoading(false);
-            });
-    }, []);
-
-    if (loading) {
-        return <p>Loading initial Pokemon data...</p>;
-    }
-
-    if (!pokemon) {
-        return <p>Error loading initial Pokemon data.</p>;
-    }
-
-    return (
-        <div className="pokemon-display">
-            <h2>Random Encounter Example:</h2>
-            <img src={pokemon.sprite_url} alt={`Sprite of ${pokemon.name}`} />
-            <p>{pokemon.name}</p>
-        </div>
-    );
-};
-
 const Trainer = (props) => {
-    const { x, y } = props.position;
+    const { x, y, gameDimensions } = props.position; 
+    const trainerSize = gameDimensions ? gameDimensions.width * 0.0625 : 50; 
+
     const style = {
         position: 'absolute',
-        left: x + 'px',
-        top: y + 'px',
-        width: '50px', 
-        height: '50px',
+        left: gameDimensions ? (x * gameDimensions.width) + 'px' : '50px', 
+        top: gameDimensions ? (y * gameDimensions.height) + 'px' : '50px',  
+        width: trainerSize + 'px', 
+        height: trainerSize + 'px',
         zIndex: 5 
     };
     return <img src="/static/sprites/ash.png" alt="Trainer" style={style} />;
 };
 
 const Game = () => {
-    const gameAreaWidth = 800;
-    const gameAreaHeight = 600;
-    const trainerWidth = 50; 
-    const trainerHeight = 50;
-    const itemSize = 50; 
+    const initialTrainerWidth = 50; 
+    const initialItemSize = 50; 
     const numBackgroundItems = 10;
     const numPokeballs = 4;
-    const maxCapturedPokemon = 6; // Max Pokemon in the list
+    const maxCapturedPokemon = 6;
 
-    const [trainerPosition, setTrainerPosition] = React.useState({ x: 50, y: 50 });
-    const [trainerTargetPosition, setTrainerTargetPosition] = React.useState({ x: 50, y: 50 });
+    const gameAreaRef = React.useRef(null);
+    const [gameDimensions, setGameDimensions] = React.useState({ width: 800, height: 600 }); 
+
+    const [trainerPosition, setTrainerPosition] = React.useState({ x: 0.1, y: 0.1 }); 
+    const [trainerTargetPosition, setTrainerTargetPosition] = React.useState({ x: 0.1, y: 0.1 });
+    
     const [backgroundItems, setBackgroundItems] = React.useState([]);
     const [showPokemonCaughtScreen, setShowPokemonCaughtScreen] = React.useState(false);
     const [caughtPokemonData, setCaughtPokemonData] = React.useState(null);
     const [capturedPokemonList, setCapturedPokemonList] = React.useState([]);
 
+    React.useEffect(() => {
+        const updateDimensions = () => {
+            if (gameAreaRef.current) {
+                setGameDimensions({
+                    width: gameAreaRef.current.offsetWidth,
+                    height: gameAreaRef.current.offsetHeight,
+                });
+            }
+        };
+        updateDimensions(); 
+        const resizeObserver = new ResizeObserver(updateDimensions);
+        if (gameAreaRef.current) {
+            resizeObserver.observe(gameAreaRef.current);
+        }
+        return () => {
+            if (gameAreaRef.current) {
+                resizeObserver.unobserve(gameAreaRef.current);
+            }
+        };
+    }, []);
 
     React.useEffect(() => {
         const items = [];
@@ -166,19 +167,18 @@ const Game = () => {
         while(pokeballIndices.size < numPokeballs) {
             pokeballIndices.add(Math.floor(Math.random() * numBackgroundItems));
         }
-
         for (let i = 0; i < numBackgroundItems; i++) {
             items.push({
                 id: `item-${i}`,
-                x: Math.random() * (gameAreaWidth - itemSize),
-                y: Math.random() * (gameAreaHeight - itemSize),
+                xPercent: Math.random(), 
+                yPercent: Math.random(), 
                 spriteUrl: '/static/sprites/tree-green.png',
                 hasPokeball: pokeballIndices.has(i),
                 pokeballRevealed: false,
             });
         }
         setBackgroundItems(items);
-    }, []);
+    }, []); 
 
     const revealPokeball = (itemId) => {
         setBackgroundItems(prevItems =>
@@ -194,26 +194,20 @@ const Game = () => {
                 item.id === itemId ? { ...item, hasPokeball: false, pokeballRevealed: false } : item
             )
         );
-
         fetch('/api/random_pokemon')
             .then(response => response.json())
             .then(data => {
-                setCaughtPokemonData(data); // Store for the modal
+                setCaughtPokemonData(data);
                 setShowPokemonCaughtScreen(true);
             })
-            .catch(error => {
-                console.error("Error fetching Pokemon for caught screen:", error);
-            });
+            .catch(error => console.error("Error fetching Pokemon for caught screen:", error));
     };
     
     const handleCloseCaughtScreen = () => {
         if (caughtPokemonData) {
             setCapturedPokemonList(prevList => {
-                const newList = [caughtPokemonData, ...prevList]; // Add to the beginning
-                if (newList.length > maxCapturedPokemon) {
-                    return newList.slice(0, maxCapturedPokemon); // Keep only the newest 6
-                }
-                return newList;
+                const newList = [caughtPokemonData, ...prevList];
+                return newList.length > maxCapturedPokemon ? newList.slice(0, maxCapturedPokemon) : newList;
             });
         }
         setShowPokemonCaughtScreen(false);
@@ -221,99 +215,108 @@ const Game = () => {
     };
 
     React.useEffect(() => {
+        if (!gameDimensions.width || !gameDimensions.height) return; 
+
+        const currentTrainerWidth = gameDimensions.width * 0.0625; 
+        const currentItemSize = gameDimensions.width * 0.0625;    
+
         backgroundItems.forEach(item => {
             if (item.hasPokeball && !item.pokeballRevealed) {
-                const trainerCenterX = trainerPosition.x + trainerWidth / 2;
-                const trainerCenterY = trainerPosition.y + trainerHeight / 2;
-                const itemCenterX = item.x + itemSize / 2;
-                const itemCenterY = item.y + itemSize / 2;
+                const trainerCenterX = trainerPosition.x * gameDimensions.width + currentTrainerWidth / 2;
+                const trainerCenterY = trainerPosition.y * gameDimensions.height + currentTrainerWidth / 2; 
+                
+                const itemCenterX = item.xPercent * gameDimensions.width + currentItemSize / 2;
+                const itemCenterY = item.yPercent * gameDimensions.height + currentItemSize / 2;
 
                 const dx = trainerCenterX - itemCenterX;
                 const dy = trainerCenterY - itemCenterY;
                 const distance = Math.sqrt(dx * dx + dy * dy);
-                const revealDistance = (trainerWidth / 2) + (itemSize / 2) - 10;
+                const revealDistance = (currentTrainerWidth / 2) + (currentItemSize / 2) - (gameDimensions.width * 0.01); 
 
                 if (distance < revealDistance) {
                     revealPokeball(item.id);
                 }
             }
         });
-    }, [trainerPosition, backgroundItems]); 
-
+    }, [trainerPosition, backgroundItems, gameDimensions]); 
 
     const gameAreaStyle = {
-        width: gameAreaWidth + 'px',
-        height: gameAreaHeight + 'px',
-        // border: '1px solid black', // Border is now handled by .game-area-container or .game-area-main
         position: 'relative', 
-        // backgroundColor: '#90ee90' // Moved to CSS via .game-area-main
+        width: '100%', 
+        height: '100%', 
     };
 
     const handleClickOnGameArea = (event) => {
-        if (showPokemonCaughtScreen || event.target.closest('.modal-content')) {
+        if (showPokemonCaughtScreen || event.target.closest('.modal-content') || !gameAreaRef.current || event.target.closest('[style*="cursor: pointer"]')) { // Prevent click if clicking on Pokeball wrapper
             return;
         }
-        const rect = event.target.getBoundingClientRect();
-        let newX = event.clientX - rect.left - (trainerWidth / 2); 
-        let newY = event.clientY - rect.top - (trainerHeight / 2);
+        const rect = gameAreaRef.current.getBoundingClientRect(); 
+        const currentTrainerWidth = gameDimensions.width * 0.0625;
 
-        newX = Math.max(0, Math.min(newX, gameAreaWidth - trainerWidth));
-        newY = Math.max(0, Math.min(newY, gameAreaHeight - trainerHeight));
+        let clickXPercent = (event.clientX - rect.left) / gameDimensions.width;
+        let clickYPercent = (event.clientY - rect.top) / gameDimensions.height;
+
+        clickXPercent -= (currentTrainerWidth / 2) / gameDimensions.width;
+        clickYPercent -= (currentTrainerWidth / 2) / gameDimensions.height; 
+
+        const trainerWidthPercent = currentTrainerWidth / gameDimensions.width;
+        clickXPercent = Math.max(0, Math.min(clickXPercent, 1 - trainerWidthPercent));
+        clickYPercent = Math.max(0, Math.min(clickYPercent, 1 - trainerWidthPercent)); 
         
-        setTrainerTargetPosition({ x: newX, y: newY });
+        setTrainerTargetPosition({ x: clickXPercent, y: clickYPercent });
     };
 
     React.useEffect(() => {
         let animationFrameId;
         const moveTrainer = () => {
             setTrainerPosition(currentPos => {
-                const dx = trainerTargetPosition.x - currentPos.x;
-                const dy = trainerTargetPosition.y - currentPos.y;
-                const dist = Math.sqrt(dx * dx + dy * dy);
-                const speed = 5;
+                const dx = trainerTargetPosition.x - currentPos.x; 
+                const dy = trainerTargetPosition.y - currentPos.y; 
+                
+                const pseudoDistX = dx * gameDimensions.width;
+                const pseudoDistY = dy * gameDimensions.height;
+                const pseudoDist = Math.sqrt(pseudoDistX * pseudoDistX + pseudoDistY * pseudoDistY);
 
-                if (dist < speed) {
+                const speedPixelsPerFrame = 5; 
+                const speedPercentX = speedPixelsPerFrame / gameDimensions.width;
+                const speedPercentY = speedPixelsPerFrame / gameDimensions.height;
+
+                if (pseudoDist < speedPixelsPerFrame) { 
                     return trainerTargetPosition; 
                 } else {
-                    const nextX = currentPos.x + (dx / dist) * speed;
-                    const nextY = currentPos.y + (dy / dist) * speed;
+                    const nextX = currentPos.x + (pseudoDistX / pseudoDist) * (speedPixelsPerFrame / gameDimensions.width);
+                    const nextY = currentPos.y + (pseudoDistY / pseudoDist) * (speedPixelsPerFrame / gameDimensions.height);
                     return { x: nextX, y: nextY };
                 }
             });
-            if (trainerPosition.x !== trainerTargetPosition.x || trainerPosition.y !== trainerTargetPosition.y) {
+            if (Math.abs(trainerPosition.x - trainerTargetPosition.x) > 0.001 || Math.abs(trainerPosition.y - trainerTargetPosition.y) > 0.001) {
                 animationFrameId = requestAnimationFrame(moveTrainer);
             }
         };
-        if (trainerPosition.x !== trainerTargetPosition.x || trainerPosition.y !== trainerTargetPosition.y) {
+        if (Math.abs(trainerPosition.x - trainerTargetPosition.x) > 0.001 || Math.abs(trainerPosition.y - trainerTargetPosition.y) > 0.001) {
             animationFrameId = requestAnimationFrame(moveTrainer);
         }
-        return () => {
-            cancelAnimationFrame(animationFrameId); 
-        };
-    }, [trainerTargetPosition, trainerPosition]); 
+        return () => cancelAnimationFrame(animationFrameId); 
+    }, [trainerTargetPosition, trainerPosition, gameDimensions]); 
 
     return (
         <div>
             <h1>Pokemon Game</h1>
             <div className="game-area-container">
-                <div style={gameAreaStyle} className="game-area-main" onClick={handleClickOnGameArea}>
+                <div ref={gameAreaRef} style={gameAreaStyle} className="game-area-main" onClick={handleClickOnGameArea}>
                     {backgroundItems.map(item => (
                         <BackgroundItem 
                             key={item.id} 
                             item={item} 
                             onRevealPokeball={revealPokeball} 
                             onCollectPokeball={collectPokeball}
+                            gameDimensions={gameDimensions}
                         />
                     ))}
-                    <Trainer position={trainerPosition} />
+                    <Trainer position={{...trainerPosition, gameDimensions}} />
                 </div>
             </div>
-            
-            {/* PokemonDisplay is now more of a demo/placeholder, could be removed or integrated differently */}
-            {/* <PokemonDisplay />  */}
-
             <CapturedPokemonList capturedPokemon={capturedPokemonList} />
-
             {showPokemonCaughtScreen && (
                 <PokemonCaughtScreen 
                     pokemonData={caughtPokemonData} 
